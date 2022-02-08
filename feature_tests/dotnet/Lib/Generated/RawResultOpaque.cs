@@ -17,25 +17,25 @@ public partial struct ResultOpaque
     private const string NativeLib = "diplomat_feature_tests";
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ResultOpaque_new", ExactSpelling = true)]
-    public static unsafe extern ResultFfiResultBoxResultOpaqueErrorEnum New(int i);
+    public static unsafe extern IntPtr New(int i);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ResultOpaque_new_failing_foo", ExactSpelling = true)]
-    public static unsafe extern ResultFfiResultBoxResultOpaqueErrorEnum NewFailingFoo();
+    public static unsafe extern IntPtr NewFailingFoo();
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ResultOpaque_new_failing_bar", ExactSpelling = true)]
-    public static unsafe extern ResultFfiResultBoxResultOpaqueErrorEnum NewFailingBar();
+    public static unsafe extern IntPtr NewFailingBar();
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ResultOpaque_new_failing_unit", ExactSpelling = true)]
-    public static unsafe extern ResultFfiResultBoxResultOpaqueVoid NewFailingUnit();
+    public static unsafe extern IntPtr NewFailingUnit();
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ResultOpaque_new_failing_struct", ExactSpelling = true)]
-    public static unsafe extern ResultFfiResultBoxResultOpaqueErrorStruct NewFailingStruct(int i);
+    public static unsafe extern IntPtr NewFailingStruct(int i);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ResultOpaque_new_in_err", ExactSpelling = true)]
-    public static unsafe extern ResultFfiResultVoidBoxResultOpaque NewInErr(int i);
+    public static unsafe extern IntPtr NewInErr(int i);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ResultOpaque_new_in_enum_err", ExactSpelling = true)]
-    public static unsafe extern ResultFfiResultErrorEnumBoxResultOpaque NewInEnumErr(int i);
+    public static unsafe extern IntPtr NewInEnumErr(int i);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ResultOpaque_assert_integer", ExactSpelling = true)]
     public static unsafe extern void AssertInteger(ResultOpaque* self, int i);

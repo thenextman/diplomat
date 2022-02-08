@@ -86,7 +86,7 @@ pub fn gen_bindings(
             let mut out_buf = String::new();
             let mut out = CodeWriter::new(&mut out_buf, INDENTATION, SCOPE_OPENING, SCOPE_CLOSING);
             raw::gen_header(&library_config, &mut out)?;
-            raw::gen_result(typ, &in_path, env, &mut out)?;
+            raw::gen_result(typ, &in_path, env, &library_config, &mut out)?;
             outs.insert(format!("Raw{}.cs", result_name), out_buf)
                 .and_then::<String, _>(|_| panic!("file created twice: Raw{}.cs", result_name));
         }

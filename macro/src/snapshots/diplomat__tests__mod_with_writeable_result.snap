@@ -15,10 +15,12 @@ mod ffi {
     extern "C" fn Foo_to_string(
         this: &Foo,
         to: &mut diplomat_runtime::DiplomatWriteable,
-    ) -> diplomat_runtime::DiplomatResult<(), ()> {
-        this.to_string(to)
+    ) -> Box<diplomat_runtime::DiplomatResult<(), ()>> {
+        Box::new(this.to_string(to))
     }
     #[no_mangle]
     extern "C" fn Foo_destroy(this: Box<Foo>) {}
+    #[no_mangle]
+    extern "C" fn result_unit_unit_destroy(this: Box<::diplomat_runtime::DiplomatResult<(), ()>>) {}
 }
 

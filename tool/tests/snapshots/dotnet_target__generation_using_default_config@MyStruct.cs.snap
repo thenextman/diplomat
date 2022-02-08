@@ -44,7 +44,9 @@ public partial class MyStruct: IDisposable
             nuint vLength = (nuint)v.Length;
             fixed (double* vPtr = v)
             {
-                Raw.FfiResultBoxMyStructBoxMyLibError result = Raw.MyStruct.NewSlice(vPtr, vLength);
+                IntPtr resultPtr = Raw.MyStruct.NewSlice(vPtr, vLength);
+                Raw.FfiResultBoxMyStructBoxMyLibError result = Marshal.PtrToStructure<Raw.FfiResultBoxMyStructBoxMyLibError>(resultPtr);
+                Raw.FfiResultBoxMyStructBoxMyLibError.Destroy(resultPtr);
                 if (!result.isOk)
                 {
                     throw new MyLibErrorException(new MyLibError(result.Err));
@@ -67,7 +69,9 @@ public partial class MyStruct: IDisposable
             nuint newSliceLength = (nuint)newSlice.Length;
             fixed (double* newSlicePtr = newSlice)
             {
-                Raw.FfiResultVoidBoxMyLibError result = Raw.MyStruct.SetSlice(_inner, newSlicePtr, newSliceLength);
+                IntPtr resultPtr = Raw.MyStruct.SetSlice(_inner, newSlicePtr, newSliceLength);
+                Raw.FfiResultVoidBoxMyLibError result = Marshal.PtrToStructure<Raw.FfiResultVoidBoxMyLibError>(resultPtr);
+                Raw.FfiResultVoidBoxMyLibError.Destroy(resultPtr);
                 if (!result.isOk)
                 {
                     throw new MyLibErrorException(new MyLibError(result.Err));

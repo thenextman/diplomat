@@ -54,7 +54,9 @@ public partial class MyStruct: IDisposable
             nuint keyBufLength = (nuint)keyBuf.Length;
             fixed (byte* keyBufPtr = keyBuf)
             {
-                Raw.FfiResultU64Void result = Raw.MyStruct.GetFooByKey(_inner, keyBufPtr, keyBufLength);
+                IntPtr resultPtr = Raw.MyStruct.GetFooByKey(_inner, keyBufPtr, keyBufLength);
+                Raw.FfiResultU64Void result = Marshal.PtrToStructure<Raw.FfiResultU64Void>(resultPtr);
+                Raw.FfiResultU64Void.Destroy(resultPtr);
                 if (!result.isOk)
                 {
                     throw new DiplomatOpaqueException();
@@ -81,7 +83,9 @@ public partial class MyStruct: IDisposable
             nuint keyBufLength = (nuint)keyBuf.Length;
             fixed (byte* keyBufPtr = keyBuf)
             {
-                Raw.FfiResultVoidVoid result = Raw.MyStruct.SetFooByKey(_inner, keyBufPtr, keyBufLength, foo);
+                IntPtr resultPtr = Raw.MyStruct.SetFooByKey(_inner, keyBufPtr, keyBufLength, foo);
+                Raw.FfiResultVoidVoid result = Marshal.PtrToStructure<Raw.FfiResultVoidVoid>(resultPtr);
+                Raw.FfiResultVoidVoid.Destroy(resultPtr);
                 if (!result.isOk)
                 {
                     throw new DiplomatOpaqueException();

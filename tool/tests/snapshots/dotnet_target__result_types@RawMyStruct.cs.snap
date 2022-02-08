@@ -20,9 +20,9 @@ public partial struct MyStruct
 {
     private const string NativeLib = "rust";
 
-    public FfiResultBoxMyOpaqueStructU8 a;
+    public byte a;
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "MyStruct_new", ExactSpelling = true)]
-    public static unsafe extern FfiResultMyStructU8 New();
+    public static unsafe extern IntPtr New();
 }
 

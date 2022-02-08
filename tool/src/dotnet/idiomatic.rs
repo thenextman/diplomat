@@ -479,14 +479,18 @@ fn gen_method(
                 Some(typ) => typ,
             };
 
-            match &method.return_type {
-                None | Some(ast::TypeName::Unit) => {}
-                Some(typ @ ast::TypeName::Result(..)) => {
-                    gen_raw_type_name_decl_position(typ, in_path, env, out)?;
-                    write!(out, " result = ")?;
+            let raw_ret_typ = match &method.return_type {
+                None | Some(ast::TypeName::Unit) => &ast::TypeName::Unit,
+                Some(typ) => typ,
+            };
+
+            match raw_ret_typ {
+                ast::TypeName::Unit => {}
+                ast::TypeName::Result(..) => {
+                    write!(out, "IntPtr resultPtr = ")?;
                 }
-                Some(typ) => {
-                    gen_raw_type_name_decl_position(typ, in_path, env, out)?;
+                _ => {
+                    gen_raw_type_name_decl_position(raw_ret_typ, in_path, env, out)?;
                     write!(out, " retVal = ")?;
                 }
             }
@@ -506,6 +510,13 @@ fn gen_method(
             writeln!(out, ");")?;
 
             if let Some((_, err_variant)) = result_to_handle {
+                let mut result_type = String::new();
+                write!(result_type, "Raw.")?;
+                gen_type_name(raw_ret_typ, in_path, env, &mut result_type)?;
+
+                writeln!(out, "{result_type} result = Marshal.PtrToStructure<{result_type}>(resultPtr);")?;
+                writeln!(out, "{result_type}.Destroy(resultPtr);")?;
+
                 writeln!(out, "if (!result.isOk)")?;
                 out.scope(|out| {
                     if err_variant.is_zst() {
@@ -672,6 +683,11 @@ fn gen_raw_type_name_decl_position(
             write!(out, "*")
         }
         ast::TypeName::Unit => panic!("unexpected unit type in parameter"),
+        ast::TypeName::Result(..) => {
+            write!(out, "Raw.")?;
+            gen_type_name(typ, in_path, env, out)?;
+            write!(out, "*")
+        }
         _ => {
             write!(out, "Raw.")?;
             gen_type_name(typ, in_path, env, out)

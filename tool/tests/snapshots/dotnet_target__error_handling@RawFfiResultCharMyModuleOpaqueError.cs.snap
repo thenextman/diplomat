@@ -18,6 +18,8 @@ namespace Interop.Raw;
 [StructLayout(LayoutKind.Sequential)]
 public partial struct FfiResultCharMyModuleOpaqueError
 {
+    private const string NativeLib = "rust";
+
     [StructLayout(LayoutKind.Explicit)]
     private unsafe struct InnerUnion
     {
@@ -47,5 +49,8 @@ public partial struct FfiResultCharMyModuleOpaqueError
             return _inner.err;
         }
     }
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "result_char_MyModuleOpaqueError_destroy", ExactSpelling = true)]
+    public static unsafe extern void Destroy(IntPtr self);
 }
 

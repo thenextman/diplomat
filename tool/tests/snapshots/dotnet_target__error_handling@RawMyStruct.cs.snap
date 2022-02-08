@@ -21,13 +21,13 @@ public partial struct MyStruct
     private const string NativeLib = "rust";
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "MyStruct_foo", ExactSpelling = true)]
-    public static unsafe extern FfiResultU32MyModuleError Foo(MyStruct* self);
+    public static unsafe extern IntPtr Foo(MyStruct* self);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "MyStruct_bar", ExactSpelling = true)]
-    public static unsafe extern FfiResultCharMyModuleOpaqueError Bar(MyStruct* self);
+    public static unsafe extern IntPtr Bar(MyStruct* self);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "MyStruct_baz", ExactSpelling = true)]
-    public static unsafe extern FfiResultVoidVoid Baz(MyStruct* self);
+    public static unsafe extern IntPtr Baz(MyStruct* self);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "MyStruct_destroy", ExactSpelling = true)]
     public static unsafe extern void Destroy(MyStruct* self);

@@ -98,7 +98,9 @@ public partial class MyStruct: IDisposable
             {
                 throw new ObjectDisposedException("MyStruct");
             }
-            Raw.FfiResultVoidU8 result = Raw.MyStruct.WriteResult(_inner, &out);
+            IntPtr resultPtr = Raw.MyStruct.WriteResult(_inner, &out);
+            Raw.FfiResultVoidU8 result = Marshal.PtrToStructure<Raw.FfiResultVoidU8>(resultPtr);
+            Raw.FfiResultVoidU8.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new ByteException(result.Err);
@@ -116,7 +118,9 @@ public partial class MyStruct: IDisposable
                 throw new ObjectDisposedException("MyStruct");
             }
             DiplomatWriteable writeable = new DiplomatWriteable();
-            Raw.FfiResultVoidU8 result = Raw.MyStruct.WriteResult(_inner, &writeable);
+            IntPtr resultPtr = Raw.MyStruct.WriteResult(_inner, &writeable);
+            Raw.FfiResultVoidU8 result = Marshal.PtrToStructure<Raw.FfiResultVoidU8>(resultPtr);
+            Raw.FfiResultVoidU8.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new ByteException(result.Err);

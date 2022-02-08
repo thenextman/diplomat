@@ -14,6 +14,8 @@ namespace DiplomatFeatures.Raw;
 [StructLayout(LayoutKind.Sequential)]
 public partial struct ResultFfiResultBoxResultOpaqueVoid
 {
+    private const string NativeLib = "diplomat_feature_tests";
+
     [StructLayout(LayoutKind.Explicit)]
     private unsafe struct InnerUnion
     {
@@ -33,4 +35,7 @@ public partial struct ResultFfiResultBoxResultOpaqueVoid
             return _inner.ok;
         }
     }
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "result_box_ResultOpaque_unit_destroy", ExactSpelling = true)]
+    public static unsafe extern void Destroy(IntPtr self);
 }

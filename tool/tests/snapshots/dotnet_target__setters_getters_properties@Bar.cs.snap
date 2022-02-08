@@ -71,7 +71,9 @@ public partial class Bar: IDisposable
             {
                 throw new ObjectDisposedException("Bar");
             }
-            Raw.FfiResultBoxFooVoid result = Raw.Bar.GetFoo(_inner);
+            IntPtr resultPtr = Raw.Bar.GetFoo(_inner);
+            Raw.FfiResultBoxFooVoid result = Marshal.PtrToStructure<Raw.FfiResultBoxFooVoid>(resultPtr);
+            Raw.FfiResultBoxFooVoid.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new DiplomatOpaqueException();
@@ -96,7 +98,9 @@ public partial class Bar: IDisposable
             {
                 throw new ObjectDisposedException("Foo");
             }
-            Raw.FfiResultVoidVoid result = Raw.Bar.SetFoo(_inner, fooRaw);
+            IntPtr resultPtr = Raw.Bar.SetFoo(_inner, fooRaw);
+            Raw.FfiResultVoidVoid result = Marshal.PtrToStructure<Raw.FfiResultVoidVoid>(resultPtr);
+            Raw.FfiResultVoidVoid.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new DiplomatOpaqueException();
@@ -113,7 +117,9 @@ public partial class Bar: IDisposable
             {
                 throw new ObjectDisposedException("Bar");
             }
-            Raw.FfiResultVoidVoid result = Raw.Bar.GetName(_inner, &out);
+            IntPtr resultPtr = Raw.Bar.GetName(_inner, &out);
+            Raw.FfiResultVoidVoid result = Marshal.PtrToStructure<Raw.FfiResultVoidVoid>(resultPtr);
+            Raw.FfiResultVoidVoid.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new DiplomatOpaqueException();
@@ -131,7 +137,9 @@ public partial class Bar: IDisposable
                 throw new ObjectDisposedException("Bar");
             }
             DiplomatWriteable writeable = new DiplomatWriteable();
-            Raw.FfiResultVoidVoid result = Raw.Bar.GetName(_inner, &writeable);
+            IntPtr resultPtr = Raw.Bar.GetName(_inner, &writeable);
+            Raw.FfiResultVoidVoid result = Marshal.PtrToStructure<Raw.FfiResultVoidVoid>(resultPtr);
+            Raw.FfiResultVoidVoid.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new DiplomatOpaqueException();
@@ -155,7 +163,9 @@ public partial class Bar: IDisposable
             nuint newNameBufLength = (nuint)newNameBuf.Length;
             fixed (byte* newNameBufPtr = newNameBuf)
             {
-                Raw.FfiResultVoidVoid result = Raw.Bar.SetName(_inner, newNameBufPtr, newNameBufLength);
+                IntPtr resultPtr = Raw.Bar.SetName(_inner, newNameBufPtr, newNameBufLength);
+                Raw.FfiResultVoidVoid result = Marshal.PtrToStructure<Raw.FfiResultVoidVoid>(resultPtr);
+                Raw.FfiResultVoidVoid.Destroy(resultPtr);
                 if (!result.isOk)
                 {
                     throw new DiplomatOpaqueException();

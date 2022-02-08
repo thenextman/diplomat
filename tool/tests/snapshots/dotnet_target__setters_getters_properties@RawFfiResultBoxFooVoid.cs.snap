@@ -20,6 +20,8 @@ namespace OurOrg.OurRustLib.Raw;
 [StructLayout(LayoutKind.Sequential)]
 public partial struct FfiResultBoxFooVoid
 {
+    private const string NativeLib = "mylib";
+
     [StructLayout(LayoutKind.Explicit)]
     private unsafe struct InnerUnion
     {
@@ -39,5 +41,8 @@ public partial struct FfiResultBoxFooVoid
             return _inner.ok;
         }
     }
+
+    [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "result_box_Foo_unit_destroy", ExactSpelling = true)]
+    public static unsafe extern void Destroy(IntPtr self);
 }
 

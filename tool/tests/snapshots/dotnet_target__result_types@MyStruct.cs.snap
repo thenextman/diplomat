@@ -19,6 +19,24 @@ public partial class MyStruct
 {
     private Raw.MyStruct _inner;
 
+    public byte A
+    {
+        get
+        {
+            unsafe
+            {
+                return _inner.a;
+            }
+        }
+        set
+        {
+            unsafe
+            {
+                _inner.a = value;
+            }
+        }
+    }
+
     /// <summary>
     /// Creates a managed <c>MyStruct</c> from the raw representation.
     /// </summary>
@@ -35,7 +53,9 @@ public partial class MyStruct
     {
         unsafe
         {
-            Raw.FfiResultMyStructU8 result = Raw.MyStruct.New();
+            IntPtr resultPtr = Raw.MyStruct.New();
+            Raw.FfiResultMyStructU8 result = Marshal.PtrToStructure<Raw.FfiResultMyStructU8>(resultPtr);
+            Raw.FfiResultMyStructU8.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new ByteException(result.Err);

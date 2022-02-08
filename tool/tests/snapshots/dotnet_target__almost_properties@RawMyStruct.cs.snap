@@ -29,13 +29,13 @@ public partial struct MyStruct
     /// This should not generate a property
     /// </summary>
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "MyStruct_get_foo_by_key", ExactSpelling = true)]
-    public static unsafe extern FfiResultU64Void GetFooByKey(MyStruct* self, byte* key, nuint keySz);
+    public static unsafe extern IntPtr GetFooByKey(MyStruct* self, byte* key, nuint keySz);
 
     /// <summary>
     /// This should not generate a property
     /// </summary>
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "MyStruct_set_foo_by_key", ExactSpelling = true)]
-    public static unsafe extern FfiResultVoidVoid SetFooByKey(MyStruct* self, byte* key, nuint keySz, long foo);
+    public static unsafe extern IntPtr SetFooByKey(MyStruct* self, byte* key, nuint keySz, long foo);
 
     /// <summary>
     /// This should not generate a property

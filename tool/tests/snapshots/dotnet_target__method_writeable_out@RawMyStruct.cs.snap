@@ -27,7 +27,7 @@ public partial struct MyStruct
     public static unsafe extern void WriteUnit(MyStruct* self, DiplomatWriteable* out);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "MyStruct_write_result", ExactSpelling = true)]
-    public static unsafe extern FfiResultVoidU8 WriteResult(MyStruct* self, DiplomatWriteable* out);
+    public static unsafe extern IntPtr WriteResult(MyStruct* self, DiplomatWriteable* out);
 
     [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "MyStruct_write_no_rearrange", ExactSpelling = true)]
     public static unsafe extern byte WriteNoRearrange(MyStruct* self, DiplomatWriteable* out);

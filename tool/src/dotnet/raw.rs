@@ -9,6 +9,7 @@ use heck::ToUpperCamelCase;
 use super::config::LibraryConfig;
 use super::types::gen_type_name;
 use super::util::{collect_errors, collect_results, gen_doc_block};
+use crate::dotnet::types::gen_type_name_to_string;
 use crate::util::{CodeWriter, SetOfAstTypes};
 
 pub fn gen_header(library_config: &LibraryConfig, out: &mut CodeWriter) -> fmt::Result {
@@ -205,6 +206,7 @@ pub fn gen_result(
     typ: &ast::TypeName,
     in_path: &ast::Path,
     env: &Env,
+    library_config: &LibraryConfig,
     out: &mut CodeWriter,
 ) -> fmt::Result {
     let (ok, err) = if let ast::TypeName::Result(ok, err) = typ {
@@ -213,16 +215,58 @@ pub fn gen_result(
         panic!("not a result: {:?}", typ);
     };
 
+    let res_name = gen_type_name_to_string(typ, in_path, env)?;
+
+    fn gen_type_name_for_result_destroy(typ: &ast::TypeName) -> String {
+        match typ {
+            ast::TypeName::Named(_) => typ.to_string(),
+            ast::TypeName::Box(underlying) => format!(
+                "box_{}",
+                gen_type_name_for_result_destroy(underlying.as_ref())
+            ),
+            ast::TypeName::Reference(_lt, _mutable, underlying) => {
+                format!(
+                    "ref_{}",
+                    gen_type_name_for_result_destroy(underlying.as_ref())
+                )
+            }
+            ast::TypeName::Option(underlying) => format!(
+                "opt_{}",
+                gen_type_name_for_result_destroy(underlying.as_ref())
+            ),
+            ast::TypeName::Result(ok, err) => {
+                format!(
+                    "result_{}_{}",
+                    gen_type_name_for_result_destroy(ok.as_ref()),
+                    gen_type_name_for_result_destroy(err.as_ref())
+                )
+            }
+            ast::TypeName::Primitive(prim) => prim.to_string(),
+            ast::TypeName::Writeable => "DiplomatWriteable".to_owned(),
+            ast::TypeName::StrReference(_mut) => "str".to_owned(),
+            ast::TypeName::PrimitiveSlice(_lt, _mut, prim) => {
+                format!("{}_slice", prim)
+            }
+            ast::TypeName::Unit => "unit".to_owned(),
+        }
+    }
+    let destroy_func_name = gen_type_name_for_result_destroy(&typ);
+
     writeln!(out)?;
     writeln!(out, "[StructLayout(LayoutKind.Sequential)]")?;
-    write!(out, "public partial struct ")?;
-    gen_type_name(typ, in_path, env, out)?;
-    writeln!(out)?;
+    writeln!(out, "public partial struct {res_name}")?;
 
     out.scope(|out| {
+        writeln!(
+            out,
+            "private const string NativeLib = \"{}\";",
+            library_config.native_lib
+        )?;
+
         // Omit variants or even the entire union if parts are zero-sized.
         // This matches what rustc effectively does with zero-sized union variants
         if !ok.is_zst() || !err.is_zst() {
+            writeln!(out)?;
             writeln!(out, "[StructLayout(LayoutKind.Explicit)]")?;
             writeln!(out, "private unsafe struct InnerUnion")?;
 
@@ -274,7 +318,12 @@ pub fn gen_result(
             })?;
         }
 
-        Ok(())
+        writeln!(out)?;
+        writeln!(
+            out,
+            r#"[DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "{destroy_func_name}_destroy", ExactSpelling = true)]"#,
+        )?;
+        writeln!(out, "public static unsafe extern void Destroy(IntPtr self);")
     })?;
 
     Ok(())
@@ -326,6 +375,10 @@ fn gen_type_name_decl_position(
             }
             _ => panic!("Options without a pointer type are not yet supported"),
         },
+        ast::TypeName::Result(..) => {
+            gen_type_name(typ, in_path, env, out)?;
+            write!(out, "*")
+        }
         ast::TypeName::Box(underlying) | ast::TypeName::Reference(.., underlying) => {
             gen_type_name_decl_position(underlying.as_ref(), in_path, env, out)?;
             write!(out, "*")
@@ -343,6 +396,7 @@ fn gen_type_name_return_position<'ast>(
 ) -> fmt::Result {
     match &typ.into() {
         None | Some(ast::TypeName::Unit) => write!(out, "void"),
+        Some(ast::TypeName::Result(..)) => write!(out, "IntPtr"),
         Some(other) => gen_type_name_decl_position(other, in_path, env, out),
     }
 }

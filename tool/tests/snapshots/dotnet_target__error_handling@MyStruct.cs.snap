@@ -42,7 +42,9 @@ public partial class MyStruct: IDisposable
             {
                 throw new ObjectDisposedException("MyStruct");
             }
-            Raw.FfiResultU32MyModuleError result = Raw.MyStruct.Foo(_inner);
+            IntPtr resultPtr = Raw.MyStruct.Foo(_inner);
+            Raw.FfiResultU32MyModuleError result = Marshal.PtrToStructure<Raw.FfiResultU32MyModuleError>(resultPtr);
+            Raw.FfiResultU32MyModuleError.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new MyModuleErrorException((MyModuleError)result.Err);
@@ -61,7 +63,9 @@ public partial class MyStruct: IDisposable
             {
                 throw new ObjectDisposedException("MyStruct");
             }
-            Raw.FfiResultCharMyModuleOpaqueError result = Raw.MyStruct.Bar(_inner);
+            IntPtr resultPtr = Raw.MyStruct.Bar(_inner);
+            Raw.FfiResultCharMyModuleOpaqueError result = Marshal.PtrToStructure<Raw.FfiResultCharMyModuleOpaqueError>(resultPtr);
+            Raw.FfiResultCharMyModuleOpaqueError.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new MyModuleOpaqueErrorException(new MyModuleOpaqueError(result.Err));
@@ -80,7 +84,9 @@ public partial class MyStruct: IDisposable
             {
                 throw new ObjectDisposedException("MyStruct");
             }
-            Raw.FfiResultVoidVoid result = Raw.MyStruct.Baz(_inner);
+            IntPtr resultPtr = Raw.MyStruct.Baz(_inner);
+            Raw.FfiResultVoidVoid result = Marshal.PtrToStructure<Raw.FfiResultVoidVoid>(resultPtr);
+            Raw.FfiResultVoidVoid.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new DiplomatOpaqueException();

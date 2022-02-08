@@ -468,7 +468,7 @@ fn result_types() {
             struct MyOpaqueStruct(UnknownType);
 
             struct MyStruct {
-                a: DiplomatResult<Box<MyOpaqueStruct>, u8>,
+                a: u8,
             }
 
             impl MyStruct {

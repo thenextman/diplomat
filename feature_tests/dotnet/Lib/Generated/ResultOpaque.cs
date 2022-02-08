@@ -37,7 +37,9 @@ public partial class ResultOpaque: IDisposable
     {
         unsafe
         {
-            Raw.ResultFfiResultBoxResultOpaqueErrorEnum result = Raw.ResultOpaque.New(i);
+            IntPtr resultPtr = Raw.ResultOpaque.New(i);
+            Raw.ResultFfiResultBoxResultOpaqueErrorEnum result = Marshal.PtrToStructure<Raw.ResultFfiResultBoxResultOpaqueErrorEnum>(resultPtr);
+            Raw.ResultFfiResultBoxResultOpaqueErrorEnum.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new ErrorEnumException((ErrorEnum)result.Err);
@@ -55,7 +57,9 @@ public partial class ResultOpaque: IDisposable
     {
         unsafe
         {
-            Raw.ResultFfiResultBoxResultOpaqueErrorEnum result = Raw.ResultOpaque.NewFailingFoo();
+            IntPtr resultPtr = Raw.ResultOpaque.NewFailingFoo();
+            Raw.ResultFfiResultBoxResultOpaqueErrorEnum result = Marshal.PtrToStructure<Raw.ResultFfiResultBoxResultOpaqueErrorEnum>(resultPtr);
+            Raw.ResultFfiResultBoxResultOpaqueErrorEnum.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new ErrorEnumException((ErrorEnum)result.Err);
@@ -73,7 +77,9 @@ public partial class ResultOpaque: IDisposable
     {
         unsafe
         {
-            Raw.ResultFfiResultBoxResultOpaqueErrorEnum result = Raw.ResultOpaque.NewFailingBar();
+            IntPtr resultPtr = Raw.ResultOpaque.NewFailingBar();
+            Raw.ResultFfiResultBoxResultOpaqueErrorEnum result = Marshal.PtrToStructure<Raw.ResultFfiResultBoxResultOpaqueErrorEnum>(resultPtr);
+            Raw.ResultFfiResultBoxResultOpaqueErrorEnum.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new ErrorEnumException((ErrorEnum)result.Err);
@@ -91,7 +97,9 @@ public partial class ResultOpaque: IDisposable
     {
         unsafe
         {
-            Raw.ResultFfiResultBoxResultOpaqueVoid result = Raw.ResultOpaque.NewFailingUnit();
+            IntPtr resultPtr = Raw.ResultOpaque.NewFailingUnit();
+            Raw.ResultFfiResultBoxResultOpaqueVoid result = Marshal.PtrToStructure<Raw.ResultFfiResultBoxResultOpaqueVoid>(resultPtr);
+            Raw.ResultFfiResultBoxResultOpaqueVoid.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new DiplomatOpaqueException();
@@ -109,7 +117,9 @@ public partial class ResultOpaque: IDisposable
     {
         unsafe
         {
-            Raw.ResultFfiResultBoxResultOpaqueErrorStruct result = Raw.ResultOpaque.NewFailingStruct(i);
+            IntPtr resultPtr = Raw.ResultOpaque.NewFailingStruct(i);
+            Raw.ResultFfiResultBoxResultOpaqueErrorStruct result = Marshal.PtrToStructure<Raw.ResultFfiResultBoxResultOpaqueErrorStruct>(resultPtr);
+            Raw.ResultFfiResultBoxResultOpaqueErrorStruct.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new ErrorStructException(new ErrorStruct(result.Err));
@@ -124,7 +134,9 @@ public partial class ResultOpaque: IDisposable
     {
         unsafe
         {
-            Raw.ResultFfiResultVoidBoxResultOpaque result = Raw.ResultOpaque.NewInErr(i);
+            IntPtr resultPtr = Raw.ResultOpaque.NewInErr(i);
+            Raw.ResultFfiResultVoidBoxResultOpaque result = Marshal.PtrToStructure<Raw.ResultFfiResultVoidBoxResultOpaque>(resultPtr);
+            Raw.ResultFfiResultVoidBoxResultOpaque.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new ResultOpaqueException(new ResultOpaque(result.Err));
@@ -140,7 +152,9 @@ public partial class ResultOpaque: IDisposable
     {
         unsafe
         {
-            Raw.ResultFfiResultErrorEnumBoxResultOpaque result = Raw.ResultOpaque.NewInEnumErr(i);
+            IntPtr resultPtr = Raw.ResultOpaque.NewInEnumErr(i);
+            Raw.ResultFfiResultErrorEnumBoxResultOpaque result = Marshal.PtrToStructure<Raw.ResultFfiResultErrorEnumBoxResultOpaque>(resultPtr);
+            Raw.ResultFfiResultErrorEnumBoxResultOpaque.Destroy(resultPtr);
             if (!result.isOk)
             {
                 throw new ResultOpaqueException(new ResultOpaque(result.Err));

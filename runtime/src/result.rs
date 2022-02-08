@@ -15,17 +15,19 @@ pub struct DiplomatResult<T, E> {
     pub is_ok: bool,
 }
 
-impl<T, E> Drop for DiplomatResult<T, E> {
-    fn drop(&mut self) {
-        unsafe {
-            if self.is_ok {
-                let _ = ManuallyDrop::take(&mut self.value.ok);
-            } else {
-                let _ = ManuallyDrop::take(&mut self.value.err);
-            }
-        }
-    }
-}
+// NOTE: in this fork, we just don't drop anything (and we assume DiplomatResult is never taken in
+// arguments, so it's fine)
+// impl<T, E> Drop for DiplomatResult<T, E> {
+//     fn drop(&mut self) {
+//         unsafe {
+//             if self.is_ok {
+//                 let _ = ManuallyDrop::take(&mut self.value.ok);
+//             } else {
+//                 let _ = ManuallyDrop::take(&mut self.value.err);
+//             }
+//         }
+//     }
+// }
 
 impl<T, E> From<Result<T, E>> for DiplomatResult<T, E> {
     fn from(result: Result<T, E>) -> Self {

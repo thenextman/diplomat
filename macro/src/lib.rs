@@ -159,15 +159,25 @@ fn gen_custom_type_method(strct: &ast::CustomType, m: &ast::Method) -> Item {
 
     let return_tokens = if let Some(return_type) = &m.return_type {
         let return_type_syn = return_type.to_syn();
-        quote! { -> #return_type_syn }
+        if let ast::TypeName::Result(..) = return_type {
+            quote! { -> Box<#return_type_syn> }
+        } else {
+            quote! { -> #return_type_syn }
+        }
     } else {
         quote! {}
+    };
+
+    let invocation_tokens = if let Some(ast::TypeName::Result(..)) = &m.return_type {
+        quote! { Box::new(#method_invocation(#(#all_params_invocation),*)) }
+    } else {
+        quote! { #method_invocation(#(#all_params_invocation),*) }
     };
 
     Item::Fn(syn::parse_quote! {
         #[no_mangle]
         extern "C" fn #extern_ident#lifetimes(#(#all_params),*) #return_tokens {
-            #method_invocation(#(#all_params_invocation),*)
+            #invocation_tokens
         }
     })
 }
@@ -253,9 +263,14 @@ fn gen_bridge(input: ItemMod) -> ItemMod {
         _ => (),
     });
 
+    let mut results = Vec::new();
+
     for custom_type in module.declared_types.values() {
         custom_type.methods().iter().for_each(|m| {
             new_contents.push(gen_custom_type_method(custom_type, m));
+            if let Some(return_type) = m.return_type.as_ref() {
+                collect_results(return_type, &mut results);
+            }
         });
 
         let destroy_ident = Ident::new(
@@ -282,6 +297,48 @@ fn gen_bridge(input: ItemMod) -> ItemMod {
         }));
     }
 
+    for result in results {
+        let (ok, err) = if let ast::TypeName::Result(ok, err) = &result {
+            (ok, err)
+        } else {
+            panic!();
+        };
+
+        let result_str = gen_type_name_for_result_destroy(&result);
+
+        let destroy_ident = Ident::new(&format!("{result_str}_destroy"), Span::call_site());
+
+        let result: syn::Type = match (ok.as_ref(), err.as_ref()) {
+            (ast::TypeName::Unit, ast::TypeName::Unit) => syn::parse_quote! {
+                ::diplomat_runtime::DiplomatResult<(), ()>
+            },
+            (ast::TypeName::Unit, _) => {
+                let err_ident = err.to_syn();
+                syn::parse_quote! {
+                    ::diplomat_runtime::DiplomatResult<(), #err_ident>
+                }
+            }
+            (_, ast::TypeName::Unit) => {
+                let ok_ident = ok.to_syn();
+                syn::parse_quote! {
+                    ::diplomat_runtime::DiplomatResult<#ok_ident, ()>
+                }
+            }
+            (_, _) => {
+                let ok_ident = ok.to_syn();
+                let err_ident = err.to_syn();
+                syn::parse_quote! {
+                    ::diplomat_runtime::DiplomatResult<#ok_ident, #err_ident>
+                }
+            }
+        };
+
+        new_contents.push(Item::Fn(syn::parse_quote! {
+            #[no_mangle]
+            extern "C" fn #destroy_ident(this: Box<#result>) {}
+        }));
+    }
+
     ItemMod {
         attrs: input.attrs,
         vis: input.vis,
@@ -302,6 +359,73 @@ pub fn bridge(
     proc_macro::TokenStream::from(expanded.to_token_stream())
 }
 
+lazy_static::lazy_static! {
+    static ref RESULTS_SETS: std::sync::Mutex<std::collections::HashSet<String>> = std::sync::Mutex::new(std::collections::HashSet::new());
+}
+
+fn collect_results<'ast>(typ: &'ast ast::TypeName, results: &mut Vec<&'ast ast::TypeName>) {
+    match typ {
+        ast::TypeName::Box(underlying) => {
+            collect_results(underlying, results);
+        }
+        ast::TypeName::Reference(_lt, _mut, underlying) => {
+            collect_results(underlying, results);
+        }
+        ast::TypeName::Option(underlying) => {
+            collect_results(underlying, results);
+        }
+        ast::TypeName::Result(ok, err) => {
+            let mut results_set = RESULTS_SETS.lock().unwrap();
+            let typ_str = typ.to_string();
+            if !results_set.contains(&typ_str) {
+                results_set.insert(typ_str);
+                results.push(typ);
+                collect_results(ok, results);
+                collect_results(err, results);
+            }
+        }
+        ast::TypeName::Unit
+        | ast::TypeName::Writeable
+        | ast::TypeName::StrReference(..)
+        | ast::TypeName::PrimitiveSlice(..)
+        | ast::TypeName::Named(_)
+        | ast::TypeName::Primitive(_) => {}
+    }
+}
+
+fn gen_type_name_for_result_destroy(typ: &ast::TypeName) -> String {
+    match typ {
+        ast::TypeName::Named(_) => typ.to_string(),
+        ast::TypeName::Box(underlying) => format!(
+            "box_{}",
+            gen_type_name_for_result_destroy(underlying.as_ref())
+        ),
+        ast::TypeName::Reference(_lt, _mutable, underlying) => {
+            format!(
+                "ref_{}",
+                gen_type_name_for_result_destroy(underlying.as_ref())
+            )
+        }
+        ast::TypeName::Option(underlying) => format!(
+            "opt_{}",
+            gen_type_name_for_result_destroy(underlying.as_ref())
+        ),
+        ast::TypeName::Result(ok, err) => {
+            format!(
+                "result_{}_{}",
+                gen_type_name_for_result_destroy(ok.as_ref()),
+                gen_type_name_for_result_destroy(err.as_ref())
+            )
+        }
+        ast::TypeName::Primitive(prim) => prim.to_string(),
+        ast::TypeName::Writeable => "DiplomatWriteable".to_owned(),
+        ast::TypeName::StrReference(_mut) => "str".to_owned(),
+        ast::TypeName::PrimitiveSlice(_lt, _mut, prim) => {
+            format!("{}_slice", prim)
+        }
+        ast::TypeName::Unit => "unit".to_owned(),
+    }
+}
 #[cfg(test)]
 mod tests {
     use std::fs::File;

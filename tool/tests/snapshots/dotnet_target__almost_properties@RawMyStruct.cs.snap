@@ -23,7 +23,11 @@ namespace OurOrg.OurRustLib.Raw;
 [StructLayout(LayoutKind.Sequential)]
 public partial struct MyStruct
 {
+#if __IOS__
+    private const string NativeLib = "libmylib.framework/libmylib";
+#else
     private const string NativeLib = "mylib";
+#endif
 
     /// <summary>
     /// This should not generate a property

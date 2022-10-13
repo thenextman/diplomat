@@ -20,7 +20,11 @@ namespace OurOrg.OurRustLib.Raw;
 [StructLayout(LayoutKind.Sequential)]
 public partial struct FfiResultBoxFooVoid
 {
+#if __IOS__
+    private const string NativeLib = "libmylib.framework/libmylib";
+#else
     private const string NativeLib = "mylib";
+#endif
 
     [StructLayout(LayoutKind.Explicit)]
     private unsafe struct InnerUnion

@@ -514,7 +514,10 @@ fn gen_method(
                 write!(result_type, "Raw.")?;
                 gen_type_name(raw_ret_typ, in_path, env, &mut result_type)?;
 
-                writeln!(out, "{result_type} result = Marshal.PtrToStructure<{result_type}>(resultPtr);")?;
+                writeln!(
+                    out,
+                    "{result_type} result = Marshal.PtrToStructure<{result_type}>(resultPtr);"
+                )?;
                 writeln!(out, "{result_type}.Destroy(resultPtr);")?;
 
                 writeln!(out, "if (!result.isOk)")?;

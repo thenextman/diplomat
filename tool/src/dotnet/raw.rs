@@ -273,11 +273,7 @@ pub fn gen_result(
     writeln!(out, "public partial struct {res_name}")?;
 
     out.scope(|out| {
-        writeln!(
-            out,
-            "private const string NativeLib = \"{}\";",
-            library_config.native_lib
-        )?;
+        gen_native_lib_dec(library_config, out)?;
 
         // Omit variants or even the entire union if parts are zero-sized.
         // This matches what rustc effectively does with zero-sized union variants
